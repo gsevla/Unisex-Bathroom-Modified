@@ -10,7 +10,7 @@ personType = {
     1: 'F',
     2: 'U'
 }
-personsNumber = 60
+personsNumber = 9
 generatedPersons = [0, 0, 0]
 queues = [queue.Queue(personsNumber/3), queue.Queue(personsNumber/3), queue.Queue(personsNumber/3)]
 boxesNumber = 1
@@ -22,21 +22,22 @@ class Person(threading.Thread):
         self.num = num
         self.gender = self.generatePersonGender()
         self.arrivalTime = arrivalTime
-        self.showPersonInfo()
+        #self.showPersonInfo()
         threading.Thread.__init__(self)
+
 
     def generatePersonGender(self):
         global generatedPersons
         
         while(True):
             personGender = personType[random.randrange(0, 3)]
-            if(personGender == 'M' and generatedPersons[0] < 20):
+            if(personGender == 'M' and generatedPersons[0] < 3):
                 generatedPersons[0] += 1
                 return personGender
-            if(personGender == 'F' and generatedPersons[1] < 20):
+            if(personGender == 'F' and generatedPersons[1] < 3):
                 generatedPersons[1] += 1
                 return personGender
-            if(personGender == 'U' and generatedPersons[2] < 20):
+            if(personGender == 'U' and generatedPersons[2] < 3):
                 generatedPersons[2] += 1
                 return personGender
     
@@ -65,7 +66,8 @@ def generatePerson():
         time.sleep(randArrival)
         totalTime += randArrival
         p = Person(i+1, totalTime)
-        print(p)
+        p
+        #print(p)
         addPersonToQueue(p)
 
     showQueues()
@@ -83,7 +85,7 @@ def addPersonToQueue(p):
 def showQueues():
     print('## [{}]Male'.format(queues[0].qsize()))
     for i in range(queues[0].qsize()):
-        print(queues[0].get().showPersonInfo())
+        print(queues[0].queue[i].arrivalTime)
 
     print('## [{}]Female'.format(queues[1].qsize()))
     for i in range(queues[1].qsize()):
