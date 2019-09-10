@@ -12,9 +12,52 @@ personType = {
 }
 personsNumber = 9
 generatedPersons = [0, 0, 0]
-queues = [queue.Queue(personsNumber/3), queue.Queue(personsNumber/3), queue.Queue(personsNumber/3)]
-boxesNumber = 1
+queue = queue.Queue(personsNumber)
+boxesNumber = 3
 totalTime = 0
+avgWaitingTime = [0, 0, 0]
+ocpRate = []
+maxThreadNum = 0
+
+
+class Bathroom(threading.Thread):
+    def __init__(self, num):
+        self.gender = ''
+        self.bathroomSize = threading.Semaphore(num)
+        self.boxes = self.generateBoxes(num)
+        threading.Thread.__init__(self, name="Bathroom")
+    
+    def run(self):
+        print(self.bathroomSize)
+        print(self.boxes)
+
+    def generateBoxes(self, num):
+        boxes = []
+        for i in range(num):
+            boxes.append(threading.Lock)
+        return boxes
+
+    def getGender(self):
+        return self.gender
+
+    def setGender(self, gender):
+        self.gender = gender
+
+    def bathroomAcquire(self, personGender):
+        if(self.gender == ''):
+            self.gender = personGender
+        self.bathroomSize.acquire()
+        print('pegou')
+
+    def bathroomRelease(self):
+        self.bathroomSize.release()
+        print(self.bathroomSize._value)
+        if(self.bathroomSize._value == boxesNumber):
+            self.gender = ''
+            threading.Condition().notify_all()
+        print('soltou')
+
+    
 
 
 class Person(threading.Thread):
@@ -22,8 +65,19 @@ class Person(threading.Thread):
         self.num = num
         self.gender = self.generatePersonGender()
         self.arrivalTime = arrivalTime
-        #self.showPersonInfo()
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name="Person {}".format(num))
+
+    def run(self):
+        self.showPersonInfo()
+
+    def enterRestroom(self, restroom):
+        if(restroom.getGender() == '' or self.gender == restroom.getGender()):
+            restroom.bathroomAcquire(self.gender)
+            time.sleep(5)
+            restroom.bathroomRelease()
+        else:
+            print(self.name)
+            threading.Condition().wait()
 
 
     def generatePersonGender(self):
@@ -31,19 +85,15 @@ class Person(threading.Thread):
         
         while(True):
             personGender = personType[random.randrange(0, 3)]
-            if(personGender == 'M' and generatedPersons[0] < 3):
+            if(personGender == 'M' and generatedPersons[0] < personsNumber/3):
                 generatedPersons[0] += 1
                 return personGender
-            if(personGender == 'F' and generatedPersons[1] < 3):
+            if(personGender == 'F' and generatedPersons[1] < personsNumber/3):
                 generatedPersons[1] += 1
                 return personGender
-            if(personGender == 'U' and generatedPersons[2] < 3):
+            if(personGender == 'U' and generatedPersons[2] < personsNumber/3):
                 generatedPersons[2] += 1
                 return personGender
-    
-    def bathroomTime(self):
-        time.sleep(5)
-        print('[{}]Person {} out at {}'.format(self.gender, self.num, totalTime))
 
     def showPersonInfo(self):
         print('[{}]Person {} arrived at {} second.'.format(self.gender, self.num, self.arrivalTime))
@@ -58,49 +108,29 @@ class Person(threading.Thread):
         return self.arrivalTime
         
 
-def generatePerson():
-    global totalTime
+def generatePerson(bathroom):
     
     for i in range(personsNumber):
         randArrival = random.randrange(1, 8)
         time.sleep(randArrival)
-        totalTime += randArrival
-        p = Person(i+1, totalTime)
-        p
-        #print(p)
-        addPersonToQueue(p)
-
-    showQueues()
-
-
-def addPersonToQueue(p):
-    if(p.gender == 'M'):
-        queues[0].put(p)
-    if(p.gender == 'F'):
-        queues[1].put(p)
-    if(p.gender == 'U'):
-        queues[2].put(p)
-
-
-def showQueues():
-    print('## [{}]Male'.format(queues[0].qsize()))
-    for i in range(queues[0].qsize()):
-        print(queues[0].queue[i].arrivalTime)
-
-    print('## [{}]Female'.format(queues[1].qsize()))
-    for i in range(queues[1].qsize()):
-        print(queues[1].get().showPersonInfo())
-
-    print('## [{}]Undefined'.format(queues[2].qsize()))
-    for i in range(queues[2].qsize()):
-        print(queues[2].get().showPersonInfo())
+        p = Person(i+1, time.time())
+        p.start()
+        queue.put(p)
+        p.enterRestroom(bathroom)
     
 
 def main():
-    arrivals = threading.Thread(target=generatePerson, name='Arrivals')
+    global globalTime
+    globalTime = time.time()
+    for i in range(boxesNumber): 
+        ocpRate.append(0)
+    
+    bth = Bathroom(boxesNumber)
+    bth.start()
+
+    arrivals = threading.Thread(target=generatePerson, name='Arrivals', args=(bth,))
     arrivals.start()
 
 
 if __name__ == "__main__":
     main()
-    
