@@ -10,8 +10,6 @@ class Bathroom(threading.Thread):
         self.stallAmo = semaphore
         self.condition = condition
         self.turn = turn
-        self.barrier = threading.Barrier(stallAmo)
-        #self.policy_c = policy_c
         self.maleQueue = []
         self.femaleQueue = []
         self.undefinedQueue = []
@@ -25,7 +23,7 @@ class Bathroom(threading.Thread):
         try:
             self.stallAmo.acquire()
             print('[{}] {} get a stall at {} second.'.format(person.getGender(), person.getMyName(), time.time()))
-            print('>> {} free stalls'.format(self.stallAmo._value))
+            print('\n>> Bathrom is {} and it has {} free stalls.\n'.format(self.gender, self.stallAmo._value))
             return True
         except:
             print('semaphore acquire error')
@@ -37,7 +35,7 @@ class Bathroom(threading.Thread):
             with self.condition:
                 self.stallAmo.release()
                 print('[{}] {} frees a stall at {} second.'.format(person.getGender(), person.getMyName(), time.time()))
-                print('>> {} free stalls'.format(self.stallAmo._value))
+                print('\n>> Bathrom is {} and it has {} free stalls.\n'.format(self.gender, self.stallAmo._value))
                 self.condition.notify_all()
                 return True
         except:
@@ -45,7 +43,7 @@ class Bathroom(threading.Thread):
             return False
         return False
 
-    #### Getters & Setters ####
+    #### Getters, Setters & Others ####
 
     def getFreeStalls(self):
         return self.stallAmo._value
@@ -62,16 +60,43 @@ class Bathroom(threading.Thread):
     def setMaleQueue(self, q):
         self.maleQueue = q
 
+    def insertMaleInQueue(self, p):
+        self.maleQueue.append(p)
+
+    def removeMaleFromQueue(self):
+        return self.maleQueue.pop(0)
+
+    def getFirstMale(self):
+        return self.maleQueue[0]
+
     def getFemaleQueue(self):
         return self.femaleQueue
 
     def setFemaleQueue(self, q):
         self.femaleQueue = q
 
+    def insertFemaleInQueue(self, p):
+        self.femaleQueue.append(p)
+
+    def removeFemaleFromQueue(self):
+        return self.femaleQueue.pop(0)
+
+    def getFirstFemale(self):
+        return self.femaleQueue[0]
+
     def getUndefinedQueue(self):
         return self.undefinedQueue
 
     def setUndefinedQueue(self, q):
         self.undefinedQueue = q
+
+    def insertUndefinedInQueue(self, p):
+        self.undefinedQueue.append(p)
+
+    def removeUndefinedFromQueue(self):
+        return self.undefinedQueue.pop(0)
+
+    def getFirstUndefined(self):
+        return self.undefinedQueue[0]
 
     

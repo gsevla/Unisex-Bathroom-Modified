@@ -7,15 +7,15 @@ import math
 
 
 
-personsComing = 9
+personsComing = 12
 eachGender = math.ceil(personsComing/3)
 maleAmo = 0
 femaleAmo = 0
 undefinedAmo = 0
 
-stallsAmo = 2
+stallsAmo = 3
 
-servedPeople = 0
+servedPeople = [0, 0, 0]
 
 
 def personGender():
@@ -42,7 +42,7 @@ def main():
     c = threading.Condition()
     sem = threading.BoundedSemaphore(stallsAmo)
     turn = []
-    policy_c = False
+    rules = False
 
     b = bathroom.Bathroom(stallsAmo, c, turn, sem)
     b.start()
@@ -50,7 +50,7 @@ def main():
     personsList = []
     for i in range(personsComing):
         gender = personGender()
-        p = person.Person(gender, i+1, time.time(), b, c, stallsAmo, policy_c, turn, sem)
+        p = person.Person(gender, i+1, time.time(), b, c, stallsAmo, rules, turn, sem, servedPeople)
         personsList.append(p)
         p.start()
 
