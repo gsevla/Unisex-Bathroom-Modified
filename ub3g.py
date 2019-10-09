@@ -7,7 +7,7 @@ import math
 
 
 
-personsComing = 12
+personsComing = 60
 eachGender = math.ceil(personsComing/3)
 maleAmo = 0
 femaleAmo = 0
@@ -16,7 +16,8 @@ undefinedAmo = 0
 stallsAmo = 3
 
 servedPeople = [0, 0, 0]
-
+busyRate = 0
+avgWaitingTime = [0, 0, 0]
 
 def personGender():
     global maleAmo, femaleAmo, undefinedAmo
@@ -72,6 +73,7 @@ if(__name__ == '__main__'):
 
     totalTime = time.time() - totalTime
     print('\n#### Execution Record ####')
-    print('>> Execution Time: {:.2f}'.format(totalTime))
-    #print(maleAmo, femaleAmo, undefinedAmo)
     print('\t{} people served'.format(servedPeople))
+    print('>> Execution Time: {:.2f}'.format(totalTime))
+    print('>> Stalls Busy Rate: {:.2f}'.format(busyRate/totalTime))
+    print('>> Average Waiting Time: [M] {:.2f} | [F] {:.2f} | [U] {:.2f}'.format(avgWaitingTime[0], avgWaitingTime[1], avgWaitingTime[2]))

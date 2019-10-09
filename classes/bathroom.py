@@ -13,6 +13,9 @@ class Bathroom(threading.Thread):
         self.maleQueue = []
         self.femaleQueue = []
         self.undefinedQueue = []
+        self.mutex = threading.Semaphore()
+        self.busy = 0
+        self.busyTemp = 0
         threading.Thread.__init__(self, name="Bathroom")
         print('Bathroom Activated. It has {} stalls.\n'.format(self.stallAmo._value))
 
@@ -23,7 +26,7 @@ class Bathroom(threading.Thread):
         try:
             self.stallAmo.acquire()
             print('[{}] {} get a stall at {} second.'.format(person.getGender(), person.getMyName(), time.time()))
-            print('\n>> Bathrom is {} and it has {} free stalls.\n'.format(self.gender, self.stallAmo._value))
+            print('>> Bathrom is {} and it has {} free stalls.'.format(self.gender, self.stallAmo._value))
             return True
         except:
             print('semaphore acquire error')
@@ -52,7 +55,8 @@ class Bathroom(threading.Thread):
         return self.gender
 
     def setGender(self, g):
-        self.gender = g
+        with self.mutex:
+            self.gender = g
 
     def getMaleQueue(self):
         return self.maleQueue
