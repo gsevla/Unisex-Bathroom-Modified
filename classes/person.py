@@ -11,7 +11,7 @@ personGender = {
 
 
 class Person(threading.Thread):
-    def __init__(self, gender, num, arrivalTime, bathroom, condition, maxStalls, rules, turn, semaphore, servedPeople):
+    def __init__(self, gender, num, arrivalTime, bathroom, condition, maxStalls, rules, turn, semaphore, servedPeople, avgWaitingTime):
         self.gender = gender
         self.num = num
         self.arrivalTime = arrivalTime
@@ -23,6 +23,7 @@ class Person(threading.Thread):
         self.mutex = threading.Semaphore()
         self.semaphore = semaphore
         self.servedPeople = servedPeople
+        self.avgWaitingTime = avgWaitingTime
         threading.Thread.__init__(self, name="Person {}".format(num))
         print('[{}] Person {} arrived at {} second.'.format(gender, num, arrivalTime))
 
@@ -132,6 +133,12 @@ class Person(threading.Thread):
                         self.bathroom.setGender(m.arrivalTime)
 
     def getStall(self):
+        if(self.gender == personGender[0]):
+            self.avgWaitingTime[0] += (time.time() - self.arrivalTime)
+        if(self.gender == personGender[1]):
+            self.avgWaitingTime[1] += (time.time() - self.arrivalTime)
+        if(self.gender == personGender[2]):
+            self.avgWaitingTime[2] += (time.time() - self.arrivalTime)
         acquire = self.bathroom.stallAcquire(self)
         if(acquire):
             time.sleep(5)
@@ -143,7 +150,7 @@ class Person(threading.Thread):
                 self.servedPeople[1] += 1
             if(self.gender == personGender[2]):
                 self.servedPeople[2] += 1
-            print(self.servedPeople)
+            #print(self.servedPeople)
             # Call for the next person
             self.priority()
 

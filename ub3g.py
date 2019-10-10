@@ -7,7 +7,7 @@ import math
 
 
 
-personsComing = 60
+personsComing = 9
 eachGender = math.ceil(personsComing/3)
 maleAmo = 0
 femaleAmo = 0
@@ -51,7 +51,7 @@ def main():
     personsList = []
     for i in range(personsComing):
         gender = personGender()
-        p = person.Person(gender, i+1, time.time(), b, c, stallsAmo, rules, turn, sem, servedPeople)
+        p = person.Person(gender, i+1, time.time(), b, c, stallsAmo, rules, turn, sem, servedPeople, avgWaitingTime)
         personsList.append(p)
         p.start()
 
@@ -76,4 +76,4 @@ if(__name__ == '__main__'):
     print('\t{} people served'.format(servedPeople))
     print('>> Execution Time: {:.2f}'.format(totalTime))
     print('>> Stalls Busy Rate: {:.2f}'.format(busyRate/totalTime))
-    print('>> Average Waiting Time: [M] {:.2f} | [F] {:.2f} | [U] {:.2f}'.format(avgWaitingTime[0], avgWaitingTime[1], avgWaitingTime[2]))
+    print('>> Average Waiting Time: [M] {:.2f} | [F] {:.2f} | [U] {:.2f}'.format(avgWaitingTime[0]/totalTime, avgWaitingTime[1]/totalTime, avgWaitingTime[2]/totalTime))
