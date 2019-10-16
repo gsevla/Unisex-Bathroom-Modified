@@ -20,7 +20,7 @@ class Bathroom(threading.Thread):
     def stallAcquire(self, person):
         try:
             self.semaphore.acquire()                
-            print('[{}] {} get a stall at {:.2f} second.'.format(person.getGender(), person.getMyName(), time.time()))
+            print('[{}] {} get a stall at {} second.'.format(person.getGender(), person.getMyName(), time.strftime("%H:%M:%Sh", time.gmtime()) ))
             print('>> Bathrom is {} and it has {} free stalls.'.format(self.gender, self.semaphore._value))
             return True
         except:
@@ -32,7 +32,7 @@ class Bathroom(threading.Thread):
         try:
             with self.condition:
                 self.semaphore.release()
-                print('[{}] {} frees a stall at {:.2f} second.'.format(person.getGender(), person.getMyName(), time.time()))
+                print('[{}] {} frees a stall at {} second.'.format(person.getGender(), person.getMyName(), time.strftime("%H:%M:%Sh", time.gmtime()) ))
                 print('>> Bathrom is {} and it has {} free stalls.'.format(self.gender, self.semaphore._value))
                 self.condition.notify_all()
                 return True

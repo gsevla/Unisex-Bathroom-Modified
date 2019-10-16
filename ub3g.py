@@ -6,13 +6,13 @@ from classes import bathroom, person
 import math
 
 
-personsComing = 9
+personsComing = 60
 eachGender = math.ceil(personsComing/3)
 maleAmo = 0
 femaleAmo = 0
 undefinedAmo = 0
 
-stallsAmo = 1
+stallsAmo = 3
 
 servedPeople = [0, 0, 0]
 busyRate = [0]
@@ -40,6 +40,8 @@ def main():
     global servedPeople
     global busyRate
 
+    mtx = threading.Semaphore()
+
     c = threading.Condition()
     sem = threading.BoundedSemaphore(stallsAmo)
 
@@ -49,7 +51,7 @@ def main():
     personsList = []
     for i in range(personsComing):
         gender = personGender()
-        p = person.Person(gender, i+1, time.time(), b, c, stallsAmo, sem, servedPeople, avgWaitingTime, busyRate)
+        p = person.Person(gender, i+1, time.time(), b, c, stallsAmo, sem, servedPeople, avgWaitingTime, busyRate, mtx)
         personsList.append(p)
         p.start()
 
