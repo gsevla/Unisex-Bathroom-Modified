@@ -1,7 +1,6 @@
 import threading
 import time
 import random
-#from ub3g import servedPeople
 
 personGender = {
     0: 'M',
@@ -11,21 +10,19 @@ personGender = {
 
 
 class Person(threading.Thread):
-    def __init__(self, gender, num, arrivalTime, bathroom, condition, maxStalls, rules, turn, semaphore, servedPeople, avgWaitingTime):
+    def __init__(self, gender, num, arrivalTime, bathroom, condition, maxStalls, semaphore, servedPeople, avgWaitingTime, busyRate):
         self.gender = gender
         self.num = num
         self.arrivalTime = arrivalTime
         self.bathroom = bathroom
         self.condition = condition
         self.maxStalls = maxStalls
-        self.rules = rules
-        self.turn = turn
-        self.mutex = threading.Semaphore()
         self.semaphore = semaphore
         self.servedPeople = servedPeople
         self.avgWaitingTime = avgWaitingTime
+        self.busyRate = busyRate
         threading.Thread.__init__(self, name="Person {}".format(num))
-        print('[{}] Person {} arrived at {} second.'.format(gender, num, arrivalTime))
+        print('[{}] Person {} arrived at {:.2f} second.'.format(gender, num, arrivalTime))
 
     def run(self):
         if(self.policy()):
@@ -33,9 +30,11 @@ class Person(threading.Thread):
         else:
             with self.condition:
                 print('{} run waiting...'.format(self.getName()))
-                while not self.personRules():
-                    self.condition.wait()
-                self.enterRestroom()
+                # while not self.personRules():
+                #     self.condition.wait()
+                with self.condition:
+                    self.condition.wait_for(self.personRules)
+                    self.enterRestroom()
 
     @classmethod
     def generateGender(cls):
@@ -110,7 +109,7 @@ class Person(threading.Thread):
         return True
 
 
-    def priority(self):
+    def callNextPerson(self):
         if(self.peopleInQueue()):
                 if(len(self.bathroom.getMaleQueue()) > 0):
                     m = self.bathroom.getFirstMale()
@@ -141,7 +140,10 @@ class Person(threading.Thread):
             self.avgWaitingTime[2] += (time.time() - self.arrivalTime)
         acquire = self.bathroom.stallAcquire(self)
         if(acquire):
+            busyTemp = time.time()
             time.sleep(5)
+            if(self.semaphore._value == (self.maxStalls-1)):
+                self.busyRate[0] += 5            
         release = self.bathroom.stallRelease(self)
         if(release):
             if(self.gender == personGender[0]):
@@ -150,9 +152,8 @@ class Person(threading.Thread):
                 self.servedPeople[1] += 1
             if(self.gender == personGender[2]):
                 self.servedPeople[2] += 1
-            #print(self.servedPeople)
             # Call for the next person
-            self.priority()
+            self.callNextPerson()
 
     def enterRestroom(self):
         if(self.personRules()):
@@ -160,9 +161,11 @@ class Person(threading.Thread):
         else:
             with self.condition:
                 print('{} enterRestroom waiting...'.format(self.getName()))
-                while not self.personRules():
-                    self.condition.wait()
-                self.enterRestroom()
+                # while not self.personRules():
+                #     self.condition.wait()
+                with self.condition:
+                    self.condition.wait_for(self.personRules)
+                    self.enterRestroom()
 
     #### Getters, Setters & Others ####
 
@@ -177,6 +180,3 @@ class Person(threading.Thread):
 
     def getGender(self):
         return self.gender
-
-    def getRules(self):
-        return self.rules
